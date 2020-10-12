@@ -1,2 +1,2 @@
 # simple.nn
-simple neural network
+simple pytorch style neural network
