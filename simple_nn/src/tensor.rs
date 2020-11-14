@@ -1,18 +1,22 @@
 #[derive(Debug)]
-pub struct Tensor {
+struct Tensor {
     data: Vec<Vec<f64>>,
+    grad: Option<Box<Tensor>>,
     shape: (usize, usize),
 }
 
 impl Tensor {
-    pub fn new (data: &Vec<Vec<f64>>) -> Tensor {
-        Tensor {
+    fn new(data: &Vec<Vec<f64>>) -> Self {
+        let shape = (data.len(), data[0].len());
+
+        Self {
             data: data.clone(),
-            shape: (data.len(), data[0].len())
+            grad: Some(Box::new(Tensor::zeros(shape))),
+            shape: shape
         }
     }
 
-    pub fn ones(size: (i32, i32)) -> Tensor {
+    fn ones(size: (usize, usize)) -> Self {
         let mut data = Vec::new();
         
         for _ in 0..size.0 {
@@ -24,14 +28,17 @@ impl Tensor {
 
             data.push(inner);
         }
+
+        let shape = (data.len(), data[0].len());
         
-        Tensor {
-            data: data.clone(),
-            shape: (data.len(), data[0].len())
+        Self {
+            data: data,
+            grad: None,
+            shape: shape
         }
     }
 
-    pub fn zeros(size: (i32, i32)) -> Tensor {
+    fn zeros(size: (usize, usize)) -> Self {
         let mut data = Vec::new();
         
         for _ in 0..size.0 {
@@ -43,14 +50,17 @@ impl Tensor {
 
             data.push(inner);
         }
+
+        let shape = (data.len(), data[0].len());
         
-        Tensor {
-            data: data.clone(),
-            shape: (data.len(), data[0].len())
+        Self {
+            data: data,
+            grad: None,
+            shape: shape
         }
     }
 
-    pub fn dot(&self, x: Tensor) -> Tensor {
+    fn dot(&self, x: Tensor) -> Self {
         let mut data = Vec::new();
 
         if x.shape.0 == self.shape.1 {
@@ -71,16 +81,30 @@ impl Tensor {
         }
 
         if data.len() > 0 {
-            Tensor {
-                data: data.clone(),
-                shape: (data.len(), data[0].len())
+            let shape = (data.len(), data[0].len());
+
+            Self {
+                data: data,
+                grad: Some(Box::new(Tensor::zeros(shape))),
+                shape: shape
             }
         }
         else {
-            Tensor {
-                data: data.clone(),
-                shape: (0, 0)
+            let shape = (0, 0);
+
+            Self {
+                data: data,
+                grad: None,
+                shape: shape
             }
+        }
+    }
+
+    fn backward(&self) -> Self {
+        Self {
+            data: vec![vec![]],
+            grad: None,
+            shape: (0, 0)
         }
     }
 }
@@ -97,6 +121,8 @@ mod tests {
         let tensor = Tensor::new(&data);
 
         assert_eq!(tensor.shape, (1, 2));
+        assert_eq!(tensor.data, [[1.0, 2.0]]);
+        assert_eq!(tensor.grad.unwrap().data, [[0.0, 0.0]]);
     }
 
     #[test]
