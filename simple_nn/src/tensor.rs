@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Tensor {
     data: Vec<Vec<f64>>,
     grad: Option<Box<Tensor>>,
@@ -89,11 +89,7 @@ impl Tensor {
     }
 
     fn backward(&self) -> Self {
-        Self {
-            data: vec![vec![]],
-            grad: None,
-            shape: (0, 0)
-        }
+        self.clone()
     }
 }
 
