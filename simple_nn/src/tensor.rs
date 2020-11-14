@@ -63,40 +63,28 @@ impl Tensor {
     fn dot(&self, x: Tensor) -> Self {
         let mut data = Vec::new();
 
-        if x.shape.0 == self.shape.1 {
+        if x.shape.0 != self.shape.1 { panic!("{} != {}", x.shape.0, self.shape.1) }
 
-            for i in 0..self.shape.0 {
-                let mut inner = Vec::new();
+        for i in 0..self.shape.0 {
+            let mut inner = Vec::new();
+            
+            for j in 0..x.shape.1 {
+                inner.push(0.0);
                 
-                for j in 0..x.shape.1 {
-                    inner.push(0.0);
-                    
-                    for k in 0..x.shape.0 {
-                        inner[j] = inner[j] + self.data[i][k] * x.data[k][j];
-                    }
+                for k in 0..x.shape.0 {
+                    inner[j] = inner[j] + self.data[i][k] * x.data[k][j];
                 }
-
-                data.push(inner);
             }
+
+            data.push(inner);
         }
 
-        if data.len() > 0 {
-            let shape = (data.len(), data[0].len());
+        let shape = (data.len(), data[0].len());
 
-            Self {
-                data: data,
-                grad: Some(Box::new(Tensor::zeros(shape))),
-                shape: shape
-            }
-        }
-        else {
-            let shape = (0, 0);
-
-            Self {
-                data: data,
-                grad: None,
-                shape: shape
-            }
+        Self {
+            data: data,
+            grad: Some(Box::new(Tensor::zeros(shape))),
+            shape: shape
         }
     }
 
