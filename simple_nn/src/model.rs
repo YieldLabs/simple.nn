@@ -26,7 +26,7 @@ mod tests {
         let data = Tensor::new(vec![vec![0.0], vec![1.0], vec![0.0]]);
         
         let model = Dummy::new(data.shape);
-        let criterion = MSELoss::new();
+        let criterion = MSE::new();
 
         let optimizer = SGD(model, lr=0.001, momentum=0.9);
 
@@ -35,7 +35,7 @@ mod tests {
 
             optimizer::zeros();
 
-            let loss = criterion(outputs, labels);
+            let loss = criterion::call(outputs, labels);
         
             loss::backward();
             optimizer::step();
