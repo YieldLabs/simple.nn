@@ -11,7 +11,7 @@ impl Tensor {
 
         Self {
             data: data.clone(),
-            grad: Some(Box::new(Tensor::zeros(shape))),
+            grad: None,
             shape: shape
         }
     }
@@ -89,7 +89,9 @@ impl Tensor {
     }
 
     fn backward(&self) -> Self {
-        self.clone()
+        let mut tensor = self.clone();
+        tensor.grad = Some(Box::new(Tensor::ones(self.shape)));
+        tensor
     }
 }
 
@@ -106,7 +108,6 @@ mod tests {
 
         assert_eq!(tensor.shape, (1, 2));
         assert_eq!(tensor.data, [[1.0, 2.0]]);
-        assert_eq!(tensor.grad.unwrap().data, [[0.0, 0.0]]);
     }
 
     #[test]

@@ -13,7 +13,7 @@ impl Linear {
     }
 
     fn call(&self, x: Tensor) -> Tensor {
-        return x.dot(self.w) + self.b;
+        return x.dot(self.w).sum(self.b);
     }
 }
 
