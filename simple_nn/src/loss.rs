@@ -1,9 +1,17 @@
-#[inline]
-fn mse_loss(x: Tensor, y: Tensor) {
-    x.dot(y)
+
+struct MSE {}
+impl MSE {
+    fn new() {}
+
+    fn call(y_hat: Tensor, y: Tensor) -> Tensor {
+        y_hat.clone()
+    }
 }
 
-#[inline]
-fn bce_loss(x: Tensor, y: Tensor) {
-    x.dot(y)
+struct BCE {}
+impl BCE {
+    fn new() {}
+    fn call(y_hat: Tensor, y: Tensor) -> Tensor {
+        y_hat.clone() 
+    }
 }
