@@ -88,6 +88,18 @@ impl Tensor {
         }
     }
 
+    fn sub(&self, x: Tensor) -> Self {
+        return x.clone();
+    }
+
+    fn pow(&self) -> Self {
+       return self.clone();
+    }
+
+    fn mean(&self) -> Self {
+        return self.clone();
+    }
+
     fn backward(&self) -> Self {
         let mut tensor = self.clone();
         tensor.grad = Some(Box::new(Tensor::ones(self.shape)));
