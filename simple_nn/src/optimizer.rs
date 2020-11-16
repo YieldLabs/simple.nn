@@ -1,5 +1,6 @@
+use super::tensor::Tensor;
 
-struct SGD {
+pub struct SGD {
     tensors: Vec<Tensor>,
     lr: Tensor,
     momentum: Tensor
@@ -9,8 +10,8 @@ impl SGD {
     fn new(tensors: Vec<Tensor>, lr: f64, momentum: f64) -> Self {
         Self {
             tensors: tensors,
-            lr: Tensor::new(!vec[!vec[lr]]),
-            momentum: Tensor::new(!vec[!vec[momentum]]),
+            lr: Tensor::new(vec![vec![lr]]),
+            momentum: Tensor::new(vec![vec![momentum]]),
         }
     }
 

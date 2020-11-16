@@ -1,18 +1,26 @@
-struct Dummy {}
+use super::nn::Linear;
+use super::tensor::Tensor;
+
+struct Dummy {
+    x1: Linear,
+    x2: Linear
+}
 
 impl Dummy {
-    fn new(input_size: (usize, usize)) {
-        self.x1 = Linear(input_size);
-        self.x2 = Linear((1, 10));
+    fn new(input_size: (usize, usize)) -> Self {
+        Self {
+            x1: Linear::new(input_size),
+            x2: Linear::new((1, 10))
+        }
     }
 
     fn forward(&self, x: Tensor) -> Tensor {
         x = self.x1.call(x);
-        x = self.x2.call(x);
+        self.x2.call(x)
     }
 
     fn predict(x: Tensor) -> Tensor {
-        x.clone();
+        x.clone()
     }
 }
 
@@ -28,7 +36,7 @@ mod tests {
         let model = Dummy::new(data.shape);
         let criterion = MSE::new();
 
-        let optimizer = SGD(model, lr=0.001, momentum=0.9);
+        let optimizer = SGD(model, 0.001, 0.9);
 
         for i in 0..10 {
             let outputs = model::forward(data);

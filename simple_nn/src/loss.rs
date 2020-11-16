@@ -1,10 +1,11 @@
+use super::tensor::Tensor;
 
-struct MSE {}
+pub struct MSE {}
 
 impl MSE {
-    fn new() {}
+    pub fn new() {}
 
     fn call(y_hat: Tensor, y: Tensor) -> Tensor {
-        y.sub(y_hat).pow().mean();
+        y.sub(y_hat).pow().mean()
     }
 }

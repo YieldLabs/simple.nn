@@ -1,18 +1,20 @@
+use super::tensor::Tensor;
+
 #[derive(Debug)]
-struct Linear {
+pub struct Linear {
     weight: Tensor,
     bias: Tensor
 }
 
 impl Linear {
-    fn new(size: (usize, usize)) -> Self {
+    pub fn new(size: (usize, usize)) -> Self {
         Self {
             weight: Tensor::zeros(size),
             bias: Tensor::ones(size)
         }
     }
 
-    fn call(&self, x: Tensor) -> Tensor {
+    pub fn call(&self, x: Tensor) -> Tensor {
         return x.dot(self.weight).sum(self.bias);
     }
 }

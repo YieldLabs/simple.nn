@@ -1,12 +1,12 @@
 #[derive(Debug, Clone)]
-struct Tensor {
-    data: Vec<Vec<f64>>,
-    grad: Option<Box<Tensor>>,
-    shape: (usize, usize),
+pub struct Tensor {
+    pub data: Vec<Vec<f64>>,
+    pub grad: Option<Box<Tensor>>,
+    pub shape: (usize, usize),
 }
 
 impl Tensor {
-    fn new(data: &Vec<Vec<f64>>) -> Self {
+    pub fn new(data: &Vec<Vec<f64>>) -> Self {
         let shape = (data.len(), data[0].len());
 
         Self {
@@ -16,7 +16,7 @@ impl Tensor {
         }
     }
 
-    fn ones(size: (usize, usize)) -> Self {
+    pub fn ones(size: (usize, usize)) -> Self {
         let mut data = Vec::new();
         
         for _ in 0..size.0 {
@@ -38,7 +38,7 @@ impl Tensor {
         }
     }
 
-    fn zeros(size: (usize, usize)) -> Self {
+    pub fn zeros(size: (usize, usize)) -> Self {
         let mut data = Vec::new();
         
         for _ in 0..size.0 {
@@ -60,7 +60,7 @@ impl Tensor {
         }
     }
 
-    fn dot(&self, x: Tensor) -> Self {
+    pub fn dot(&self, x: Tensor) -> Self {
         let mut data = Vec::new();
 
         if x.shape.0 != self.shape.1 { panic!("{} != {}", x.shape.0, self.shape.1) }
@@ -88,19 +88,23 @@ impl Tensor {
         }
     }
 
-    fn sub(&self, x: Tensor) -> Self {
+    pub fn sum(&self, x: Tensor) -> Self {
         return x.clone();
     }
 
-    fn pow(&self) -> Self {
+    pub fn sub(&self, x: Tensor) -> Self {
+        return x.clone();
+    }
+
+    pub fn pow(&self) -> Self {
        return self.clone();
     }
 
-    fn mean(&self) -> Self {
+    pub fn mean(&self) -> Self {
         return self.clone();
     }
 
-    fn backward(&self) -> Self {
+    pub fn backward(&self) -> Self {
         let mut tensor = self.clone();
         tensor.grad = Some(Box::new(Tensor::ones(self.shape)));
         tensor
