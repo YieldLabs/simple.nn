@@ -1,29 +1,28 @@
-use super::tensor::Tensor;
+use super::tensor::Tensor1D;
 
+#[derive(Debug)]
 pub struct SGD {
-    tensors: Vec<Tensor>,
-    lr: Tensor,
-    momentum: Tensor
+    parameters: Vec<Tensor1D>,
+    lr: Tensor1D
 }
 
 impl SGD {
-    fn new(tensors: Vec<Tensor>, lr: f64, momentum: f64) -> Self {
+    pub fn new(parameters: Vec<Tensor1D>, lr: f32) -> Self {
         Self {
-            tensors: tensors,
-            lr: Tensor::new(vec![vec![lr]]),
-            momentum: Tensor::new(vec![vec![momentum]]),
+            parameters: parameters,
+            lr: Tensor1D::new(vec![lr]),
         }
     }
 
-    fn zeros(&self) -> {
-        for tensor in self.tensors {
-            tensor.grad = Some(Box::new(Tensor::zeros(tensor.shape)));
+    pub fn zeros(&self) {
+        for tensor in self.parameters {
+            tensor.grad = None;
         }
     }
 
-    fn step(&self) -> {
-        for tensor in self.tensors {
-            tensor = tensor.sub(self.lr).mul(tensor.grad.unwrap())
+    pub fn step(&self) {
+        for tensor in self.parameters {
+            tensor = tensor - tensor * self.lr;
         }
     }
 }

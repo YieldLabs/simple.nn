@@ -1,5 +1,10 @@
-use super::nn::Linear;
-use super::tensor::Tensor;
+use super::nn::{Linear, Layer};
+use super::tensor::Tensor1D;
+
+trait Model {
+    fn parameters(&self) -> Vec<Tensor1D>;
+    fn forward(&self, x: Tensor1D) -> Tensor1D;
+}
 
 struct Dummy {
     x1: Linear,
@@ -7,20 +12,27 @@ struct Dummy {
 }
 
 impl Dummy {
-    fn new(input_size: (usize, usize)) -> Self {
+    pub fn new(input_size: (usize, usize)) -> Self {
         Self {
             x1: Linear::new(input_size),
             x2: Linear::new((1, 10))
         }
     }
+}
 
-    fn forward(&self, x: Tensor) -> Tensor {
-        x = self.x1.call(x);
-        self.x2.call(x)
+impl Model for Dummy {
+    fn parameters(&self) -> Vec<Tensor1D> {
+        let v = Vec::new();
+        v.extend(self.x1.parameters());
+        v.extend(self.x2.parameters());
+        v
     }
 
-    fn predict(x: Tensor) -> Tensor {
-        x.clone()
+    fn forward(&self, x: Tensor1D) -> Tensor1D {
+        x = self.x1.call(x);
+        x = x.relu();
+        x = self.x2.call(x);
+        x
     }
 }
 
@@ -29,27 +41,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_create_model() { 
-        let labels = Tensor::new(vec![vec![1.0], vec![1.0], vec![1.0]]);
-        let data = Tensor::new(vec![vec![0.0], vec![1.0], vec![0.0]]);
+    fn test_create_model() {
+        let epochs = 10;
+
+        let X = Tensor1D::new(vec![0.0, 1.0, 1.0]);
+        let y = Tensor1D::new(vec![1.0, 1.0, 0.0]);
         
-        let model = Dummy::new(data.shape);
-        let criterion = MSE::new();
+        let model = Dummy::new(X.shape);
+        let outputs = model::forward(X);
 
-        let optimizer = SGD(model, 0.001, 0.9);
+        // let sgd = SGD::new(model.parameters(), 0.001);
 
-        for i in 0..10 {
-            let outputs = model::forward(data);
+        // for i in 0..epochs {
+        //     let outputs = model::forward(X);
 
-            optimizer::zeros();
+        //     sgd::zeros();
 
-            let loss = criterion::call(outputs, labels);
+        //     let loss = MSE::call(outputs, y);
         
-            loss::backward();
-            optimizer::step();
-        }
-
-        assert_eq!(model::predict(vec![vec![1.0, 0.0, 2.5]]), 2.0);
+        //     loss::backward();
+        //     sgd::step();
+        // }
     }
 }
 
