@@ -1,6 +1,7 @@
 use super::tensor::Tensor1D;
+use super::shared::Optimizer;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SGD {
     parameters: Vec<Tensor1D>,
     lr: Tensor1D
@@ -13,16 +14,18 @@ impl SGD {
             lr: Tensor1D::new(vec![lr]),
         }
     }
+}
 
-    pub fn zeros(&self) {
-        for tensor in self.parameters {
+impl Optimizer for SGD {
+    fn zeros(self) {
+        for mut tensor in self.parameters {
             tensor.grad = None;
         }
     }
 
-    pub fn step(&self) {
-        for tensor in self.parameters {
-            tensor = tensor - tensor * self.lr;
+    fn step(self) {
+        for mut tensor in self.parameters {
+            tensor = tensor.clone() - tensor.clone() * self.lr.clone();
         }
     }
 }

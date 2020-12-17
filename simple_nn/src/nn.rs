@@ -1,9 +1,5 @@
 use super::tensor::Tensor1D;
-
-pub trait Layer {
-    fn parameters(&self) -> Vec<Tensor1D>;
-    fn call(&self, x: Tensor1D) -> Tensor1D;
-}
+use super::shared::Layer;
 
 #[derive(Debug)]
 pub struct Linear {
@@ -21,11 +17,11 @@ impl Linear {
 }
 
 impl Layer for Linear {
-    fn parameters(&self) -> Vec<Tensor1D> {
+    fn parameters(self) -> Vec<Tensor1D> {
         vec![self.weight, self.bias]
     }
 
-    fn call(&self, x: Tensor1D) -> Tensor1D {
+    fn call(self, x: Tensor1D) -> Tensor1D {
         x * self.weight + self.bias
     }
 }
@@ -37,7 +33,7 @@ mod tests {
     #[test]
     fn test_create_new() { 
         let nn = Linear::new((2, 2));
-        assert_eq!(nn.weight, vec![vec![0.0, 0.0], vec![0.0, 0.0]]);
-        assert_eq!(nn.bias, vec![vec![0.0], vec![0.0]])
+        assert_eq!(nn.weight, Tensor1D::zeros(2));
+        assert_eq!(nn.bias, Tensor1D::ones(1))
     }
 }

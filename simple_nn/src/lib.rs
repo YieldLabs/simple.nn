@@ -1,5 +1,6 @@
 pub mod tensor;
-pub mod loss;
-pub mod model;
-pub mod nn;
 pub mod optimizer;
+pub mod loss;
+pub mod nn;
+pub mod model;
+pub mod shared;

@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct Tensor1D {
     pub data: Vec<f32>,
     pub grad: Option<Box<Tensor1D>>,
@@ -8,58 +8,56 @@ pub struct Tensor1D {
 }
 
 impl Tensor1D {
-    pub fn new(data: Vec<f32>) -> Tensor1D {
-        Tensor1D {
+    pub fn new(data: Vec<f32>) -> Self {
+        Self {
             data: data.clone(),
             grad: None,
             shape: (1, data.len())
         }
     }
 
-    pub fn ones(size: usize) -> Tensor1D {
+    pub fn ones(size: usize) -> Self {
         let data = vec![1.0; size];
 
-        Tensor1D {
+        Self {
             data: data.clone(),
             grad: None,
             shape: (1, data.len())
         }
     }
 
-    pub fn zeros(size: usize) -> Tensor1D {
+    pub fn zeros(size: usize) -> Self {
         let data = vec![0.0; size];
         
-        Tensor1D {
+        Self {
             data: data.clone(),
             grad: None,
             shape: (1, data.len())
         }
     }
 
-    pub fn backward(self) {
-        match self.grad {
-            None => self.grad = Some(Box::new(Tensor1D::ones(self.shape.1)))
-        }
+    pub fn backward(mut self) {
+        self.grad = Some(Box::new(Tensor1D::ones(self.shape.1)));
     }
 
-    pub fn pow(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    pub fn pow(self) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
         }
     }
 
-    pub fn mean(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    pub fn mean(self) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
         }
     }
 
-    pub fn relu(self) -> Tensor1D {
-        Tensor1D {
+    pub fn relu(&self) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
@@ -67,11 +65,17 @@ impl Tensor1D {
     }
 }
 
+impl Clone for Tensor1D {
+    fn clone(&self) -> Self {
+        Tensor1D::new(self.data.clone())
+    }
+}
+
 impl Add for Tensor1D {
     type Output = Tensor1D;
 
-    fn add(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    fn add(self, x: Tensor1D) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
@@ -82,8 +86,8 @@ impl Add for Tensor1D {
 impl Mul for Tensor1D {
     type Output = Tensor1D;
     
-    fn mul(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    fn mul(self, x: Tensor1D) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
@@ -94,8 +98,8 @@ impl Mul for Tensor1D {
 impl Sub for Tensor1D {
     type Output = Tensor1D;
     
-    fn sub(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    fn sub(self, x: Tensor1D) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())
@@ -103,11 +107,12 @@ impl Sub for Tensor1D {
     }
 }
 
+
 impl Div for Tensor1D {
     type Output = Tensor1D;
     
-    fn div(self, x: Tensor1D) -> Tensor1D {
-        Tensor1D {
+    fn div(self, x: Tensor1D) -> Self {
+        Self {
             data: self.data.clone(),
             grad: None,
             shape: (1, self.data.len())

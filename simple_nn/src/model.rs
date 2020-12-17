@@ -1,12 +1,8 @@
-use super::nn::{Linear, Layer};
+use super::nn::Linear;
 use super::tensor::Tensor1D;
+use super::shared::{Model, Layer};
 
-trait Model {
-    fn parameters(&self) -> Vec<Tensor1D>;
-    fn forward(&self, x: Tensor1D) -> Tensor1D;
-}
-
-struct Dummy {
+pub struct Dummy {
     x1: Linear,
     x2: Linear
 }
@@ -21,18 +17,18 @@ impl Dummy {
 }
 
 impl Model for Dummy {
-    fn parameters(&self) -> Vec<Tensor1D> {
-        let v = Vec::new();
+    fn parameters(self) -> Vec<Tensor1D> {
+        let mut v = Vec::new();
         v.extend(self.x1.parameters());
         v.extend(self.x2.parameters());
         v
     }
 
-    fn forward(&self, x: Tensor1D) -> Tensor1D {
-        x = self.x1.call(x);
-        x = x.relu();
-        x = self.x2.call(x);
-        x
+    fn forward(self, x: Tensor1D) -> Tensor1D {
+       let mut res = self.x1.call(x);
+       res = res.relu();
+       res = self.x2.call(res);
+       res
     }
 }
 
@@ -42,13 +38,11 @@ mod tests {
 
     #[test]
     fn test_create_model() {
-        let epochs = 10;
-
-        let X = Tensor1D::new(vec![0.0, 1.0, 1.0]);
+        let x = Tensor1D::new(vec![0.0, 1.0, 1.0]);
         let y = Tensor1D::new(vec![1.0, 1.0, 0.0]);
         
-        let model = Dummy::new(X.shape);
-        let outputs = model::forward(X);
+        let dummy = Dummy::new(x.shape);
+        assert_eq!(dummy.forward(x), x);
 
         // let sgd = SGD::new(model.parameters(), 0.001);
 
