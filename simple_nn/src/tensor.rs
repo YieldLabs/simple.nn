@@ -1,4 +1,5 @@
 use std::ops::{Add, Div, Mul, Sub};
+use rand::distributions::{Distribution, Uniform};
 
 #[derive(Debug, PartialEq)]
 pub struct Tensor1D {
@@ -19,21 +20,26 @@ impl Tensor1D {
     pub fn ones(size: usize) -> Self {
         let data = vec![1.0; size];
 
-        Self {
-            data: data.clone(),
-            grad: None,
-            shape: (1, data.len())
-        }
+        Tensor1D::new(data)
     }
 
     pub fn zeros(size: usize) -> Self {
         let data = vec![0.0; size];
         
-        Self {
-            data: data.clone(),
-            grad: None,
-            shape: (1, data.len())
+        Tensor1D::new(data)
+    }
+
+    pub fn uniform(size: usize) -> Self {
+        let mut data = Vec::with_capacity(size);
+
+        let uniform = Uniform::from(-1.0..1.0);
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..size {
+            data.push(uniform.sample(&mut rng));
         }
+
+        Tensor1D::new(data)
     }
 
     pub fn backward(mut self) {

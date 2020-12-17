@@ -10,7 +10,7 @@ pub struct Linear {
 impl Linear {
     pub fn new(size: (usize, usize)) -> Self {
         Self {
-            weight: Tensor1D::zeros(size.0), // random
+            weight: Tensor1D::uniform(size.0),
             bias: Tensor1D::ones(1)
         }
     }
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn test_create_new() { 
         let nn = Linear::new((2, 2));
-        assert_eq!(nn.weight, Tensor1D::zeros(2));
+        assert_eq!(nn.weight.shape, (1, 2));
         assert_eq!(nn.bias, Tensor1D::ones(1))
     }
 }

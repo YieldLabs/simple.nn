@@ -7,3 +7,6 @@ edition = "2018"
 [lib]
 name = "simple_nn"
 path = "src/lib.rs"
+
+[dependencies]
+rand = "0.7.3"

@@ -42,16 +42,17 @@ mod tests {
         let y = Tensor1D::new(vec![1.0, 1.0, 0.0]);
         
         let dummy = Dummy::new(x.shape);
-        assert_eq!(dummy.forward(x), x);
+        let outputs = dummy.forward(x);
+        assert_eq!(outputs, y);
 
         // let sgd = SGD::new(model.parameters(), 0.001);
 
         // for i in 0..epochs {
-        //     let outputs = model::forward(X);
+        //     let outputs = model.forward(X);
 
         //     sgd::zeros();
 
-        //     let loss = MSE::call(outputs, y);
+        //     let loss = MSE.call(outputs, y);
         
         //     loss::backward();
         //     sgd::step();
