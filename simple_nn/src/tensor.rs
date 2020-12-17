@@ -46,6 +46,23 @@ impl Tensor1D {
         self.clone() * self.clone()
     }
 
+    pub fn dot(self, x: Tensor1D) -> Self {
+        let n = usize::max(self.shape.0, x.shape.0);
+        let mut data = vec![0.0; 1];
+
+        if self.shape.0 == x.shape.0 {
+            for i in 0..n {
+                for k in 0..1 {
+                    data[k] = data[k] + self.data[i] * x.data[i]
+                }
+            }
+        } else {
+            panic!("Check shape size");
+        }
+
+        Self::new(data)
+    }
+
     pub fn mean(self) -> Self {
         let mut res = 0.0;
         
@@ -57,7 +74,14 @@ impl Tensor1D {
     }
 
     pub fn relu(self) -> Self {
-        Self::new(self.data)
+        let n = self.shape.0;
+        let mut data = vec![0.0; n];
+
+        for i in 0..n {
+            data[i] = f32::max(0.0, self.data[i]);
+        }
+
+        Self::new(data)
     }
 }
 
@@ -281,5 +305,13 @@ mod tests {
     fn test_pow() {
         let t1 = Tensor1D::new(vec![3.0, 3.0, 5.0]);
         assert_eq!(t1.pow(), Tensor1D::new(vec![9.0, 9.0, 25.0]));
+    }
+
+    #[test]
+    fn test_dot() {
+        let t1 = Tensor1D::new(vec![3.0, 2.0, 3.0]);
+        let t2 = Tensor1D::ones(3);
+
+        assert_eq!(t1.dot(t2), Tensor1D::new(vec![8.0]));
     }
 }

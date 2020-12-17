@@ -11,7 +11,7 @@ impl Dummy {
     pub fn new(input_size: (usize, usize)) -> Self {
         Self {
             x1: Linear::new(input_size),
-            x2: Linear::new((1, 10))
+            x2: Linear::new((1, 0))
         }
     }
 }
@@ -28,7 +28,8 @@ impl Model for Dummy {
        let mut res = self.x1.call(x);
        res = res.relu();
        res = self.x2.call(res);
-       res
+       
+       res.relu()
     }
 }
 
