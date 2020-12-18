@@ -25,11 +25,8 @@ impl Model for Dummy {
     }
 
     fn forward(self, x: Tensor1D) -> Tensor1D {
-       let mut res = self.x1.call(x);
-       res = res.relu();
-       res = self.x2.call(res);
-       
-       res.relu()
+       let res = self.x1.call(x).relu();
+       self.x2.call(res).relu()
     }
 }
 

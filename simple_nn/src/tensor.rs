@@ -1,5 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 use rand::distributions::{Distribution, Uniform};
+use std::f32::consts::E;
 
 #[derive(Debug, PartialEq)]
 pub struct Tensor1D {
@@ -42,10 +43,6 @@ impl Tensor1D {
         self.grad = Some(Box::new(Tensor1D::ones(self.shape.0)));
     }
 
-    pub fn pow(self) -> Self {
-        self.clone() * self.clone()
-    }
-
     pub fn dot(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; 1];
@@ -63,22 +60,38 @@ impl Tensor1D {
         Self::new(data)
     }
 
+    pub fn pow(self) -> Self {
+        self.clone() * self.clone()
+    }
+
     pub fn mean(self) -> Self {
         let mut res = 0.0;
+        let n = self.shape.0;
         
-        for i in 0..self.shape.0 {
+        for i in 0..n {
             res += self.data[i];
         }
 
-        Self::new(vec![res / self.shape.0 as f32])
+        Self::new(vec![res / n as f32])
     }
 
     pub fn relu(self) -> Self {
         let n = self.shape.0;
-        let mut data = vec![0.0; n];
+        let mut data = Vec::with_capacity(n);
 
         for i in 0..n {
-            data[i] = f32::max(0.0, self.data[i]);
+            data.push(f32::max(0.0, self.data[i]));
+        }
+
+        Self::new(data)
+    }
+
+    pub fn sigmoid(self) -> Self {
+        let n = self.shape.0;
+        let mut data = Vec::with_capacity(n);
+
+        for i in 0..n {
+            data.push(1.0 / (1.0 + E.powf(-self.data[i])));
         }
 
         Self::new(data)
@@ -87,12 +100,12 @@ impl Tensor1D {
 
 impl Clone for Tensor1D {
     fn clone(&self) -> Self {
-        Tensor1D::new(self.data.clone())
+        Self::new(self.data.clone())
     }
 }
 
 impl Add for Tensor1D {
-    type Output = Tensor1D;
+    type Output = Self;
 
     fn add(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
@@ -125,7 +138,7 @@ impl Add for Tensor1D {
 }
 
 impl Mul for Tensor1D {
-    type Output = Tensor1D;
+    type Output = Self;
     
     fn mul(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
@@ -158,7 +171,7 @@ impl Mul for Tensor1D {
 }
 
 impl Sub for Tensor1D {
-    type Output = Tensor1D;
+    type Output = Self;
     
     fn sub(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
@@ -192,7 +205,7 @@ impl Sub for Tensor1D {
 
 
 impl Div for Tensor1D {
-    type Output = Tensor1D;
+    type Output = Self;
     
     fn div(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
@@ -285,7 +298,6 @@ mod tests {
 
         let t3 = Tensor1D::new(vec![2.0]);
         let t4 = Tensor1D::new(vec![3.0, 3.0, 5.0]);
-
         assert_eq!(t3 / t4, Tensor1D::new(vec![0.6666667, 0.6666667, 0.4]));
     }
 
@@ -297,7 +309,6 @@ mod tests {
 
         let t3 = Tensor1D::new(vec![2.0]);
         let t4 = Tensor1D::new(vec![3.0, 3.0, 5.0]);
-
         assert_eq!(t3 * t4, Tensor1D::new(vec![6.0, 6.0, 10.0]));
     }
 
@@ -311,7 +322,24 @@ mod tests {
     fn test_dot() {
         let t1 = Tensor1D::new(vec![3.0, 2.0, 3.0]);
         let t2 = Tensor1D::ones(3);
-
         assert_eq!(t1.dot(t2), Tensor1D::new(vec![8.0]));
+    }
+
+    #[test]
+    fn test_mean() {
+        let t1 = Tensor1D::new(vec![3.0, 2.0, 3.0, 2.0, 0.0]);
+        assert_eq!(t1.mean(), Tensor1D::new(vec![2.0]));
+    }
+
+    #[test]
+    fn test_relu() {
+        let t1 = Tensor1D::new(vec![-3.0, 2.0, -3.0, 2.0, 0.0]);
+        assert_eq!(t1.relu(), Tensor1D::new(vec![0.0, 2.0, 0.0, 2.0, 0.0]));
+    }
+
+    #[test]
+    fn test_sigmoid() {
+        let t1 = Tensor1D::new(vec![-3.0, 2.0, -3.0, 2.0, 0.0]);
+        assert_eq!(t1.sigmoid(), Tensor1D::new(vec![0.047425877, 0.880797, 0.047425877, 0.880797, 0.5]));
     }
 }
