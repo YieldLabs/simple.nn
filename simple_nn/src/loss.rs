@@ -7,3 +7,17 @@ impl MSE {
         (y - y_hat).pow().mean()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mse_loss() {
+        let t1 = Tensor1D::new(vec![4.0, 3.0]);
+        let t2 = Tensor1D::new(vec![1.0, 2.0]);
+        
+        let loss = MSE::call(t1, t2);
+        assert_eq!(loss, Tensor1D::new(vec![5.0]));
+    }
+}

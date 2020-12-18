@@ -64,15 +64,21 @@ impl Tensor1D {
         self.clone() * self.clone()
     }
 
-    pub fn mean(self) -> Self {
+    pub fn sum(self) -> Self {
         let mut res = 0.0;
         let n = self.shape.0;
-        
+
         for i in 0..n {
             res += self.data[i];
         }
 
-        Self::new(vec![res / n as f32])
+        Self::new(vec![res])
+    }
+
+    pub fn mean(self) -> Self {
+        let n = self.shape.0 as f32;
+
+        self.sum() / Self::new(vec![n])
     }
 
     pub fn relu(self) -> Self {
@@ -323,6 +329,12 @@ mod tests {
         let t1 = Tensor1D::new(vec![3.0, 2.0, 3.0]);
         let t2 = Tensor1D::ones(3);
         assert_eq!(t1.dot(t2), Tensor1D::new(vec![8.0]));
+    }
+
+    #[test]
+    fn test_sum() {
+        let t1 = Tensor1D::new(vec![3.0, 2.0, 3.0, 2.0, 0.0]);
+        assert_eq!(t1.sum(), Tensor1D::new(vec![10.0]));
     }
 
     #[test]
