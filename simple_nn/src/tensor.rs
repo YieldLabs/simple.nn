@@ -2,16 +2,12 @@ use std::ops::{Add, Div, Mul, Sub};
 use rand::distributions::{Distribution, Uniform};
 use std::f32::consts::E;
 
-#[derive(Debug)]
-enum Ops {
-
-}
 
 #[derive(Debug, PartialEq)]
 pub struct Tensor1D {
     pub data: Vec<f32>,
     pub grad: Option<Box<Tensor1D>>,
-    pub shape: (usize, usize)
+    pub shape: (usize, usize),
 }
 
 impl Tensor1D {
@@ -49,6 +45,10 @@ impl Tensor1D {
         // topologycal sort and reverse apply ops fn
     }
 
+    pub fn transpose(self) -> Self {
+        self.clone()
+    }
+
     pub fn dot(self, x: Tensor1D) -> Self {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; 1];
@@ -66,8 +66,8 @@ impl Tensor1D {
         Self::new(data)
     }
 
-    pub fn transpose(self) -> Self {
-        self.clone()
+    pub fn neg(self) -> Self {
+        Self::new(vec![-1.0]) * self
     }
 
     pub fn abs(self) -> Self {
@@ -489,6 +489,12 @@ mod tests {
     fn test_log10() {
         let t1 = Tensor1D::new(vec![3.0, 3.0, 5.0]);
         assert_eq!(t1.log10(), Tensor1D::new(vec![0.47712126, 0.47712126, 0.69897]));
+    }
+
+    #[test]
+    fn test_neg() {
+        let t1 = Tensor1D::new(vec![3.0, -1.0, -5.0]);
+        assert_eq!(t1.neg(), Tensor1D::new(vec![-3.0, 1.0, 5.0]));
     }
 
     #[test]
