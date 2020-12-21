@@ -9,4 +9,4 @@ name = "simple_nn"
 path = "src/lib.rs"
 
 [dependencies]
-rand = "0.7.3"
+rand = "0.8.0"
