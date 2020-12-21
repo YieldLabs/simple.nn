@@ -4,7 +4,7 @@ pub struct MSE {}
 
 impl MSE {
     pub fn call(y_hat: Tensor1D, y: Tensor1D) -> Tensor1D {
-        (y - y_hat).pow().mean()
+        (y - y_hat).pow(2.0).mean()
     }
 }
 
