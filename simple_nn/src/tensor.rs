@@ -22,7 +22,10 @@ pub enum Ops {
     ADD,
     SUB,
     MUL,
-    DIV
+    DIV,
+    NEG,
+    MIN,
+    MAX
 }
 
 #[derive(Debug)]
@@ -213,7 +216,7 @@ impl Tensor1D {
             }
         }
 
-        Tensor1D::new(vec![res])
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::MAX)))
     }
 
     pub fn min(self) -> Tensor1D {
@@ -226,11 +229,18 @@ impl Tensor1D {
             }
         }
 
-        Tensor1D::new(vec![res])
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::MIN)))
     }
 
     pub fn neg(self) -> Tensor1D {
-        Tensor1D::new(vec![-1.0]) * self
+        let n = self.shape.0;
+        let mut data = Vec::with_capacity(n);
+
+        for i in 0..n {
+            data.push(-1.0 * self.data[i]);
+        }
+
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::NEG)))
     }
 
     pub fn sum(self) -> Tensor1D {
@@ -319,7 +329,7 @@ impl Add for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::ADD)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::ADD)))
     }
 }
 
@@ -352,7 +362,7 @@ impl Mul for Tensor1D {
             }
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::MUL)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::MUL)))
     }
 }
 
@@ -385,7 +395,7 @@ impl Sub for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::SUB)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::SUB)))
     }
 }
 
@@ -419,7 +429,7 @@ impl Div for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::DIV)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::DIV)))
     }
 }
 
