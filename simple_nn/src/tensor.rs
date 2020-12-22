@@ -2,32 +2,68 @@ use std::ops::{Add, Div, Mul, Sub};
 use rand::distributions::{Distribution, Uniform};
 use std::f32::consts::E;
 
+#[derive(Debug)]
+pub enum Ops {
+    T,
+    DOT,
+    ABS,
+    EXP,
+    SQRT,
+    LOG,
+    LOG10,
+    SIN,
+    COS,
+    TAN,
+    POW(f32),
+    SUM,
+    MEAN,
+    RELU,
+    SIGMOID,
+    ADD,
+    SUB,
+    MUL,
+    DIV
+}
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Tensor1D {
     pub data: Vec<f32>,
-    pub grad: Option<Box<Tensor1D>>,
     pub shape: (usize, usize),
+    pub grad: Option<Box<Tensor1D>>,
+    depends_on: (Option<Box<Tensor1D>>, Option<Box<Tensor1D>>),
+    ops: Option<Box<Ops>>
 }
 
 impl Tensor1D {
-    pub fn new(data: Vec<f32>) -> Self {
-        Self {
+    pub fn new(data: Vec<f32>) -> Tensor1D {
+        Tensor1D {
             data: data.clone(),
-            grad: None,
             shape: (data.len(), 0),
+            grad: None,
+            depends_on: (None, None),
+            ops: None
         }
     }
 
-    pub fn ones(size: usize) -> Self {
-        Self::new(vec![1.0; size])
+    pub fn new_with_deps(data: Vec<f32>, lhs: Option<Box<Tensor1D>>, rhs: Option<Box<Tensor1D>>, ops: Option<Box<Ops>>) -> Tensor1D {
+        Tensor1D {
+            data: data.clone(),
+            shape: (data.len(), 0),
+            grad: None,
+            depends_on: (lhs, rhs),
+            ops: ops
+        }
     }
 
-    pub fn zeros(size: usize) -> Self {
-        Self::new(vec![0.0; size])
+    pub fn ones(size: usize) -> Tensor1D {
+        Tensor1D::new(vec![1.0; size])
     }
 
-    pub fn uniform(size: usize) -> Self {
+    pub fn zeros(size: usize) -> Tensor1D {
+        Tensor1D::new(vec![0.0; size])
+    }
+
+    pub fn uniform(size: usize) -> Tensor1D {
         let uniform = Uniform::from(-1.0..1.0);
         let mut rng = rand::thread_rng();
         
@@ -37,19 +73,21 @@ impl Tensor1D {
             data.push(uniform.sample(&mut rng));
         }
 
-        Self::new(data)
+        Tensor1D::new(data)
     }
 
     pub fn backward(mut self) {
         self.grad = Some(Box::new(Tensor1D::ones(self.shape.0)));
         // topologycal sort and reverse apply ops fn
+
     }
 
-    pub fn transpose(self) -> Self {
-        self.clone()
+    pub fn transpose(self) -> Tensor1D {
+        let t = self.clone();
+        Tensor1D::new_with_deps(t.data, Some(Box::new(self)), None, Some(Box::new(Ops::T)))
     }
 
-    pub fn dot(self, x: Tensor1D) -> Self {
+    pub fn dot(self, x: Tensor1D) -> Tensor1D {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; 1];
 
@@ -63,14 +101,10 @@ impl Tensor1D {
             panic!("Check shape size");
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::DOT)))
     }
 
-    pub fn neg(self) -> Self {
-        Self::new(vec![-1.0]) * self
-    }
-
-    pub fn abs(self) -> Self {
+    pub fn abs(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -78,10 +112,10 @@ impl Tensor1D {
             data.push(self.data[i].abs());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::ABS)))
     }
 
-    pub fn exp(self) -> Self {
+    pub fn exp(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -89,10 +123,10 @@ impl Tensor1D {
             data.push(self.data[i].exp());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::EXP)))
     }
 
-    pub fn sqrt(self) -> Self {
+    pub fn sqrt(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -100,10 +134,10 @@ impl Tensor1D {
             data.push(self.data[i].sqrt());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SQRT)))
     }
 
-    pub fn log(self) -> Self {
+    pub fn log(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -111,10 +145,10 @@ impl Tensor1D {
             data.push(self.data[i].log(E));
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::LOG)))
     }
 
-    pub fn log10(self) -> Self {
+    pub fn log10(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -122,10 +156,10 @@ impl Tensor1D {
             data.push(self.data[i].log10());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::LOG10)))
     }
 
-    pub fn sin(self) -> Self {
+    pub fn sin(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -133,10 +167,10 @@ impl Tensor1D {
             data.push(self.data[i].sin());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SIN)))
     }
 
-    pub fn cos(self) -> Self {
+    pub fn cos(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -144,10 +178,10 @@ impl Tensor1D {
             data.push(self.data[i].cos());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::COS)))
     }
 
-    pub fn tan(self) -> Self {
+    pub fn tan(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -155,10 +189,10 @@ impl Tensor1D {
             data.push(self.data[i].tan());
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::TAN)))
     }
 
-    pub fn pow(self, exp: f32) -> Self {
+    pub fn pow(self, exp: f32) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -166,10 +200,10 @@ impl Tensor1D {
             data.push(self.data[i].powf(exp));
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::POW(2.0))))
     }
 
-    pub fn max(self) -> Self {
+    pub fn max(self) -> Tensor1D {
         let mut res = 0.0;
         let n = self.shape.0;
 
@@ -179,10 +213,10 @@ impl Tensor1D {
             }
         }
 
-        Self::new(vec![res])
+        Tensor1D::new(vec![res])
     }
 
-    pub fn min(self) -> Self {
+    pub fn min(self) -> Tensor1D {
         let mut res = 0.0;
         let n = self.shape.0;
 
@@ -192,10 +226,14 @@ impl Tensor1D {
             }
         }
 
-        Self::new(vec![res])
+        Tensor1D::new(vec![res])
     }
 
-    pub fn sum(self) -> Self {
+    pub fn neg(self) -> Tensor1D {
+        Tensor1D::new(vec![-1.0]) * self
+    }
+
+    pub fn sum(self) -> Tensor1D {
         let mut res = 0.0;
         let n = self.shape.0;
 
@@ -203,16 +241,21 @@ impl Tensor1D {
             res += self.data[i];
         }
 
-        Self::new(vec![res])
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::SUM)))
     }
 
-    pub fn mean(self) -> Self {
-        let n = self.shape.0 as f32;
+    pub fn mean(self) -> Tensor1D {
+        let mut res = 0.0;
+        let n = self.shape.0;
 
-        self.sum() / Self::new(vec![n])
+        for i in 0..n {
+            res += self.data[i];
+        }
+
+        Tensor1D::new_with_deps(vec![res / n as f32], Some(Box::new(self)), None, Some(Box::new(Ops::MEAN)))
     }
 
-    pub fn relu(self) -> Self {
+    pub fn relu(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -220,10 +263,10 @@ impl Tensor1D {
             data.push(f32::max(0.0, self.data[i]));
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::RELU)))
     }
 
-    pub fn sigmoid(self) -> Self {
+    pub fn sigmoid(self) -> Tensor1D {
         let n = self.shape.0;
         let mut data = Vec::with_capacity(n);
 
@@ -231,20 +274,26 @@ impl Tensor1D {
             data.push(1.0 / (1.0 + E.powf(-self.data[i])));
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SIGMOID)))
     }
 }
 
 impl Clone for Tensor1D {
-    fn clone(&self) -> Self {
-        Self::new(self.data.clone())
+    fn clone(&self) -> Tensor1D {
+        Tensor1D::new(self.data.clone())
+    }
+}
+
+impl PartialEq for Tensor1D {
+    fn eq(&self, other: &Tensor1D) -> bool {
+        self.data == other.data
     }
 }
 
 impl Add for Tensor1D {
-    type Output = Self;
+    type Output = Tensor1D;
 
-    fn add(self, x: Tensor1D) -> Self {
+    fn add(self, x: Tensor1D) -> Tensor1D {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; n];
 
@@ -270,14 +319,14 @@ impl Add for Tensor1D {
             }
         }
             
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::ADD)))
     }
 }
 
 impl Mul for Tensor1D {
-    type Output = Self;
+    type Output = Tensor1D;
     
-    fn mul(self, x: Tensor1D) -> Self {
+    fn mul(self, x: Tensor1D) -> Tensor1D {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; n];
 
@@ -303,14 +352,14 @@ impl Mul for Tensor1D {
             }
         }
 
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::MUL)))
     }
 }
 
 impl Sub for Tensor1D {
-    type Output = Self;
+    type Output = Tensor1D;
     
-    fn sub(self, x: Tensor1D) -> Self {
+    fn sub(self, x: Tensor1D) -> Tensor1D {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; n];
 
@@ -336,15 +385,15 @@ impl Sub for Tensor1D {
             }
         }
             
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::SUB)))
     }
 }
 
 
 impl Div for Tensor1D {
-    type Output = Self;
+    type Output = Tensor1D;
     
-    fn div(self, x: Tensor1D) -> Self {
+    fn div(self, x: Tensor1D) -> Tensor1D {
         let n = usize::max(self.shape.0, x.shape.0);
         let mut data = vec![0.0; n];
 
@@ -370,7 +419,7 @@ impl Div for Tensor1D {
             }
         }
             
-        Self::new(data)
+        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::DIV)))
     }
 }
 
