@@ -86,8 +86,46 @@ impl Tensor1D {
 
     pub fn backward(mut self) {
         self.grad = Some(Box::new(Tensor1D::ones(self.shape.0)));
-        // topologycal sort and reverse apply ops fn
+        
+        let mut topo: Vec<Tensor1D> = Vec::new();
+        let mut visited: Vec<Tensor1D> = Vec::new();
 
+        let lhs = *self.depends_on.0.unwrap();
+        let rhs = *self.depends_on.1.unwrap();
+
+        for t in topo {
+            t._backward()
+        }
+    }
+
+    fn _backward(mut self) {
+        let grad = match self.ops {
+            Some(Ops::T) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::DOT) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::ABS) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::EXP) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::SQRT) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::LOG) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::LOG10) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::SIN) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::COS) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::TAN) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::POW(exp)) => Tensor1D::zeros(exp as usize),
+            Some(Ops::SUM) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::MEAN) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::ADD) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::SUB) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::MUL) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::DIV) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::NEG) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::MIN) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::MAX) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::RELU) => Tensor1D::zeros(self.shape.0),
+            Some(Ops::SIGMOID) => Tensor1D::zeros(self.shape.0),
+            None => Tensor1D::zeros(self.shape.0)
+        };
+
+        self.grad = Some(Box::new(grad));
     }
 
     pub fn transpose(self) -> Tensor1D {
