@@ -34,7 +34,7 @@ pub struct Tensor1D {
     pub shape: (usize, usize),
     pub grad: Option<Box<Tensor1D>>,
     depends_on: (Option<Box<Tensor1D>>, Option<Box<Tensor1D>>),
-    ops: Option<Box<Ops>>
+    ops: Option<Ops>
 }
 
 impl Tensor1D {
@@ -48,7 +48,12 @@ impl Tensor1D {
         }
     }
 
-    pub fn new_with_deps(data: Vec<f32>, lhs: Option<Box<Tensor1D>>, rhs: Option<Box<Tensor1D>>, ops: Option<Box<Ops>>) -> Tensor1D {
+    fn new_with_deps(
+        data: Vec<f32>,
+        lhs: Option<Box<Tensor1D>>,
+        rhs: Option<Box<Tensor1D>>,
+        ops: Option<Ops>
+    ) -> Tensor1D {
         Tensor1D {
             data: data.clone(),
             shape: (data.len(), 0),
@@ -87,7 +92,7 @@ impl Tensor1D {
 
     pub fn transpose(self) -> Tensor1D {
         let t = self.clone();
-        Tensor1D::new_with_deps(t.data, Some(Box::new(self)), None, Some(Box::new(Ops::T)))
+        Tensor1D::new_with_deps(t.data, Some(Box::new(self)), None, Some(Ops::T))
     }
 
     pub fn dot(self, x: Tensor1D) -> Tensor1D {
@@ -104,7 +109,7 @@ impl Tensor1D {
             panic!("Check shape size");
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)),  Some(Box::new(x)), Some(Box::new(Ops::DOT)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Ops::DOT))
     }
 
     pub fn abs(self) -> Tensor1D {
@@ -115,7 +120,7 @@ impl Tensor1D {
             data.push(self.data[i].abs());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::ABS)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::ABS))
     }
 
     pub fn exp(self) -> Tensor1D {
@@ -126,7 +131,7 @@ impl Tensor1D {
             data.push(self.data[i].exp());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::EXP)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::EXP))
     }
 
     pub fn sqrt(self) -> Tensor1D {
@@ -137,7 +142,7 @@ impl Tensor1D {
             data.push(self.data[i].sqrt());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SQRT)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::SQRT))
     }
 
     pub fn log(self) -> Tensor1D {
@@ -148,7 +153,7 @@ impl Tensor1D {
             data.push(self.data[i].log(E));
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::LOG)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::LOG))
     }
 
     pub fn log10(self) -> Tensor1D {
@@ -159,7 +164,7 @@ impl Tensor1D {
             data.push(self.data[i].log10());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::LOG10)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::LOG10))
     }
 
     pub fn sin(self) -> Tensor1D {
@@ -170,7 +175,7 @@ impl Tensor1D {
             data.push(self.data[i].sin());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SIN)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::SIN))
     }
 
     pub fn cos(self) -> Tensor1D {
@@ -181,7 +186,7 @@ impl Tensor1D {
             data.push(self.data[i].cos());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::COS)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::COS))
     }
 
     pub fn tan(self) -> Tensor1D {
@@ -192,7 +197,7 @@ impl Tensor1D {
             data.push(self.data[i].tan());
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::TAN)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::TAN))
     }
 
     pub fn pow(self, exp: f32) -> Tensor1D {
@@ -203,7 +208,7 @@ impl Tensor1D {
             data.push(self.data[i].powf(exp));
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::POW(2.0))))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::POW(exp)))
     }
 
     pub fn max(self) -> Tensor1D {
@@ -216,7 +221,7 @@ impl Tensor1D {
             }
         }
 
-        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::MAX)))
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Ops::MAX))
     }
 
     pub fn min(self) -> Tensor1D {
@@ -229,7 +234,7 @@ impl Tensor1D {
             }
         }
 
-        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::MIN)))
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Ops::MIN))
     }
 
     pub fn neg(self) -> Tensor1D {
@@ -240,7 +245,7 @@ impl Tensor1D {
             data.push(-1.0 * self.data[i]);
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::NEG)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::NEG))
     }
 
     pub fn sum(self) -> Tensor1D {
@@ -251,7 +256,7 @@ impl Tensor1D {
             res += self.data[i];
         }
 
-        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Box::new(Ops::SUM)))
+        Tensor1D::new_with_deps(vec![res], Some(Box::new(self)), None, Some(Ops::SUM))
     }
 
     pub fn mean(self) -> Tensor1D {
@@ -262,7 +267,7 @@ impl Tensor1D {
             res += self.data[i];
         }
 
-        Tensor1D::new_with_deps(vec![res / n as f32], Some(Box::new(self)), None, Some(Box::new(Ops::MEAN)))
+        Tensor1D::new_with_deps(vec![res / n as f32], Some(Box::new(self)), None, Some(Ops::MEAN))
     }
 
     pub fn relu(self) -> Tensor1D {
@@ -273,7 +278,7 @@ impl Tensor1D {
             data.push(f32::max(0.0, self.data[i]));
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::RELU)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::RELU))
     }
 
     pub fn sigmoid(self) -> Tensor1D {
@@ -284,7 +289,7 @@ impl Tensor1D {
             data.push(1.0 / (1.0 + E.powf(-self.data[i])));
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Box::new(Ops::SIGMOID)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), None, Some(Ops::SIGMOID))
     }
 }
 
@@ -329,7 +334,7 @@ impl Add for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::ADD)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Ops::ADD))
     }
 }
 
@@ -362,7 +367,7 @@ impl Mul for Tensor1D {
             }
         }
 
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::MUL)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Ops::MUL))
     }
 }
 
@@ -395,7 +400,7 @@ impl Sub for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::SUB)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Ops::SUB))
     }
 }
 
@@ -429,7 +434,7 @@ impl Div for Tensor1D {
             }
         }
             
-        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Box::new(Ops::DIV)))
+        Tensor1D::new_with_deps(data, Some(Box::new(self)), Some(Box::new(x)), Some(Ops::DIV))
     }
 }
 
